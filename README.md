@@ -9,7 +9,6 @@ $ py dsdetect.py pokeheartgold.us.nds
 
 DS Protect found @ ovy 123
 Version: 1.23
-
 ```
 
 ```
@@ -20,7 +19,6 @@ Version: 2.05 Instant
 
 DS Protect found @ ovy 337
 Version: 2.05
-
 ```
 
 See [dsprot](https://github.com/taxicat1/dsprot/) for DS Protect decompilations.
