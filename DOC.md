@@ -4,7 +4,7 @@ This document details exactly what `dsdetect.py` is doing.
 
 ## Does \<game\> have DS Protect?
 
-Outside of just using this tool, or if this tool does not find DS Protect, the fastest way to get an idea if a given game has DS Protect is by checking nds-bootstrap's [list of AP-patched games](https://github.com/DS-Homebrew/nds-bootstrap/blob/master/retail/apfix/AP-patched%20games.md). The majority of games on this list use DS Protect as their only anti-piracy. However, a game being included on this list does not mean neccessarily that it uses DS Protect.
+Outside of just using this tool, or if this tool does not find DS Protect, the fastest way to get an idea if a given game has DS Protect is by checking nds-bootstrap's [list of AP-patched games](https://github.com/DS-Homebrew/nds-bootstrap/blob/master/retail/apfix/AP-patched%20games.md). The majority of games on this list use DS Protect as their only anti-piracy. However, a game being included on this list does not mean necessarily that it uses DS Protect.
 
 ## Where is DS Protect?
 
@@ -18,11 +18,11 @@ Every single version of DS Protect includes these bytes in a `.rodata` region:
 
 `FF F6 40 FF FF CE 00 00`
 
-These are bit-flipped zero-padded bytes of the default MAC address that was used by No$GBA at the time. This was never updated across the versions of DS Protect, nor was its encoding or storage location ever changed. Once these bytes are found, the version can be identified using the data that preceedes them:
+These are bit-flipped zero-padded bytes of the default MAC address that was used by No$GBA at the time. This was never updated across the versions of DS Protect, nor was its encoding or storage location ever changed. Once these bytes are found, the version can be identified using the data that precedes them:
 
 ### Version identification via garbage data
 
-In versions 1.23 to 1.28, six words of garbage data immediately preceed the MAC address:
+In versions 1.23 to 1.28, six words of garbage data immediately precede the MAC address:
 
 ```
 e2ed720b  ;  6 words of garbage data
@@ -74,7 +74,7 @@ In either case, the garbage data can be used to positively identify the DS Prote
 
 ### Version identification via encryption keys
 
-Versions prior to 1.23 do not have garbage data. They still have the MAC address data, but preceeding it is regular instructions:
+Versions prior to 1.23 do not have garbage data. They still have the MAC address data, but preceding it is regular instructions:
 
 ```
 ebfffcdd  ;  <some instructions>
