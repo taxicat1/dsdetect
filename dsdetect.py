@@ -39,7 +39,8 @@ def has_signature(text, signature):
 		end = len(text) - len(signature)
 		while idx < end:
 			try:
-				yield text.index(value, idx + 1, end)
+				idx = text.index(value, idx + 1, end)
+				yield idx
 			except ValueError:
 				break
 		
