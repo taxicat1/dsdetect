@@ -89,8 +89,6 @@ def decompress(data, min_subsequence=3):
 	padding = deltas >> 24
 	size = deltas & 0x00FFFFFF
 	
-	total_decompressed_bytes = offset + size
-	
 	total_size = len(data) + offset
 	
 	write_idx = total_size - 1
