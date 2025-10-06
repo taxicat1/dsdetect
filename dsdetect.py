@@ -1,3 +1,7 @@
+"""
+Analyze a Nintendo DS ROM file (.nds) for the presence of DS Protect.
+"""
+
 import struct
 import argparse
 
@@ -230,7 +234,7 @@ def check_rom(romfile):
 
 
 def dsdetect_main():
-	parser = argparse.ArgumentParser()
+	parser = argparse.ArgumentParser(description=__doc__)
 	parser.add_argument("rom", type=argparse.FileType("rb"))
 	
 	args = parser.parse_args()
