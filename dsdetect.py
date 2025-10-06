@@ -201,7 +201,7 @@ def check_arm9_static(romfile):
 	if compressed:
 		decompress(arm9_bytes)
 	
-	return has_dsprotect(arm9_bytes, f"static region")
+	return has_dsprotect(arm9_bytes, "static region")
 
 
 def check_gsdd(romfile):
