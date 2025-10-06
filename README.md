@@ -7,17 +7,17 @@ Examples:
 ```
 $ py dsdetect.py pokeheartgold.us.nds
 
-DS Protect found @ ovy 123
+DS Protect found @ overlay 123
 Version: 1.23
 ```
 
 ```
 $ py dsdetect.py POKEMON_W2_IRDO01_00.nds
 
-DS Protect found @ ovy 165
+DS Protect found @ overlay 165
 Version: 2.05 Instant
 
-DS Protect found @ ovy 337
+DS Protect found @ overlay 337
 Version: 2.05
 ```
 
