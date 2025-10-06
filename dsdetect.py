@@ -96,8 +96,7 @@ def decompress(data, min_subsequence=3):
 	read_end_idx = len(data) - size - 1
 	
 	# Extend buffer to size
-	while len(data) != total_size:
-		data.append(0)
+	data.extend(bytearray(total_size - len(data)))
 	
 	# Begin decompression
 	while read_idx > read_end_idx:
