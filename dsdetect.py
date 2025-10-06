@@ -146,29 +146,34 @@ def check_arm9_overlays(romfile):
 	
 	# Get ARM9 overlay table location/size
 	romfile.seek(0x50)
-	arm9_ovy_offset, arm9_ovy_size = CARDRomRegion.unpack(romfile.read(CARDRomRegion.size))
+	arm9_ovy_tbl_offset, arm9_ovy_tbl_size = CARDRomRegion.unpack(romfile.read(CARDRomRegion.size))
 	
 	# Get ARM9 overlay entries
-	romfile.seek(arm9_ovy_offset)
-	arm9_ovy_entries = list(OverlayInfo.iter_unpack(romfile.read(arm9_ovy_size)))
+	romfile.seek(arm9_ovy_tbl_offset)
+	arm9_ovy_tbl_raw = romfile.read(arm9_ovy_tbl_size)
 	
 	# Check each overlay
 	detected = False
-	for ovy_id, ram_start, size, bss_size, sinit_start, sinit_end, file_id, flag in arm9_ovy_entries:
+	for ovy_id, ram_start, size, bss_size, sinit_start, sinit_end, file_id, flag in OverlayInfo.iter_unpack(arm9_ovy_tbl_raw):
 		start, end = fat_entries[file_id]
 		
 		romfile.seek(start)
 		ovy_bytes = bytearray(romfile.read(end - start))
 		
-		# Check if the overlay is compressed
-		if flag & 0x01000000:
-			decompress(ovy_bytes)
+		try:
+			# Check if the overlay is compressed
+			if flag & 0x01000000:
+				decompress(ovy_bytes)
+				
+			# Optimization: DS Protect will be detectable before the sinit region, so we can truncate everything after that
+			sinit_offset = sinit_start - ram_start
+			ovy_bytes = ovy_bytes[:sinit_offset]
+			
+			detected |= has_dsprotect(ovy_bytes, f"overlay {ovy_id}")
 		
-		# Optimization: DS Protect will be detectable before the sinit region, so we can truncate everything after that
-		sinit_offset = sinit_start - ram_start
-		ovy_bytes = ovy_bytes[:sinit_offset]
-		
-		detected |= has_dsprotect(ovy_bytes, f"overlay {ovy_id}")
+		except:
+			print(f"Warning: failed to analyze overlay {ovy_id}")
+			continue
 	
 	return detected
 
@@ -181,32 +186,30 @@ def check_arm9_static(romfile):
 	romfile.seek(0x20)
 	arm9_offset, arm9_entry, arm9_ram_start, arm9_size = ARM9Info.unpack(romfile.read(ARM9Info.size))
 	
+	# Get ARM9 static region
 	romfile.seek(arm9_offset)
 	arm9_bytes = bytearray(romfile.read(arm9_size))
 	
-	# Check if the ARM9 is compressed
+	# Check if the static region is compressed
 	# Must search for the module parameters in crt0
-	compressed = False
 	romfile.seek(arm9_offset + (arm9_entry - arm9_ram_start))
 	search_data = bytes_to_u32s(romfile.read(0x1000))
+	
 	try:
 		idx = search_data.index(ModuleParamMagic, 3)
 		if search_data[idx - 3] != 0:
-			compressed = True
+			decompress(arm9_bytes)
+		
+		return has_dsprotect(arm9_bytes, "static region")
 	
-	except ValueError:
+	except:
 		print("Warning: failed to analyze ARM9 static region")
 		return False
-	
-	if compressed:
-		decompress(arm9_bytes)
-	
-	return has_dsprotect(arm9_bytes, "static region")
 
 
 def check_gsdd(romfile):
 	romfile.seek(0xC)
-	code = romfile.read(3).decode("ascii")
+	code = romfile.read(4).decode("ascii")
 	return code.startswith("BO5")
 
 
