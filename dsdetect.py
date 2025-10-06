@@ -33,23 +33,19 @@ dsprot_signatures = {
 def has_signature(text, signature):
 	# Simple dumb algorithm: check for all indices of the start, then investigate if those are full matches later
 	# Since these are random 32-bit numbers, the false positive rate on the start of the pattern should be basically zero
-	def find_potential_indices(text, signature):
-		indices = list()
+	def potential_indices(text, signature):
 		idx = 0
 		value = signature[0]
 		end = len(text) - len(signature)
 		while idx < end:
 			try:
-				idx = text.index(value, idx + 1, end)
-				indices.append(idx)
+				yield text.index(value, idx + 1, end)
 			except ValueError:
 				break
 		
-		return indices
+		return
 	
-	potential_indices = find_potential_indices(text, signature)
-	
-	for idx in potential_indices:
+	for idx in potential_indices(text, signature):
 		matching = True
 		for i in range(len(signature)):
 			if text[idx + i] != signature[i]:
