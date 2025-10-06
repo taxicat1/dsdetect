@@ -52,7 +52,7 @@ def has_signature(text, signature):
 			if text[idx + i] != signature[i]:
 				matching = False
 				break
-			
+		
 		if matching:
 			return True
 	
