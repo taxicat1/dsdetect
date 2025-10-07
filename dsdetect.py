@@ -47,13 +47,7 @@ def has_signature(text, signature):
 		return
 	
 	for idx in potential_indices(text, signature):
-		matching = True
-		for i in range(len(signature)):
-			if text[idx + i] != signature[i]:
-				matching = False
-				break
-		
-		if matching:
+		if text[idx : idx + len(signature)] == signature:
 			return True
 	
 	return False
