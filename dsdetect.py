@@ -160,7 +160,7 @@ def check_arm9_overlays(romfile):
 			detected |= has_dsprotect(ovy_bytes, f"overlay {ovy_id}")
 		
 		except:
-			print(f"Warning: failed to analyze overlay {ovy_id}")
+			print(f"WARNING: failed to analyze overlay {ovy_id}")
 			continue
 	
 	return detected
@@ -180,8 +180,9 @@ def check_arm9_static(romfile):
 	
 	# Check if the static region is compressed
 	# Must search for the module parameters in crt0
-	romfile.seek(arm9_offset + (arm9_entry - arm9_ram_start))
-	search_data = bytes_to_u32s(romfile.read(0x1000))
+	search_start = arm9_entry - arm9_ram_start
+	search_end = search_start + 0x1000 # Arbitrary, should be fine
+	search_data = bytes_to_u32s(arm9_bytes[search_start:search_end])
 	
 	try:
 		idx = search_data.index(ModuleParamMagic, 3)
@@ -191,7 +192,7 @@ def check_arm9_static(romfile):
 		return has_dsprotect(arm9_bytes, "static region")
 	
 	except:
-		print("Warning: failed to analyze ARM9 static region")
+		print("WARNING: failed to analyze ARM9 static region")
 		return False
 
 
