@@ -349,40 +349,40 @@ def decompress(data, min_subsequence=3):
 				break
 
 
-def check_arm9_overlays(romfile):
+def check_arm9_overlays(rom_file):
 	CARDRomRegion = struct.Struct("<LL")
 	FATEntry      = struct.Struct("<LL")
 	OverlayInfo   = struct.Struct("<LLLLLLLL")
 	
 	# Get FAT location/size
-	romfile.seek(0x48)
-	fat_offset, fat_size = CARDRomRegion.unpack(romfile.read(CARDRomRegion.size))
+	rom_file.seek(0x48)
+	fat_offset, fat_size = CARDRomRegion.unpack(rom_file.read(CARDRomRegion.size))
 	
 	# Read FAT entries
-	romfile.seek(fat_offset)
-	fat_entries = list(FATEntry.iter_unpack(romfile.read(fat_size)))
+	rom_file.seek(fat_offset)
+	fat_entries = list(FATEntry.iter_unpack(rom_file.read(fat_size)))
 	
 	# Get ARM9 overlay table location/size
-	romfile.seek(0x50)
-	arm9_ovy_tbl_offset, arm9_ovy_tbl_size = CARDRomRegion.unpack(romfile.read(CARDRomRegion.size))
+	rom_file.seek(0x50)
+	arm9_ovy_tbl_offset, arm9_ovy_tbl_size = CARDRomRegion.unpack(rom_file.read(CARDRomRegion.size))
 	
 	# Get ARM9 overlay entries
-	romfile.seek(arm9_ovy_tbl_offset)
-	arm9_ovy_tbl_raw = romfile.read(arm9_ovy_tbl_size)
+	rom_file.seek(arm9_ovy_tbl_offset)
+	arm9_ovy_tbl_raw = rom_file.read(arm9_ovy_tbl_size)
 	
 	# Check each overlay
 	detected = False
 	for ovy_id, ram_start, size, bss_size, sinit_start, sinit_end, file_id, flag in OverlayInfo.iter_unpack(arm9_ovy_tbl_raw):
 		start, end = fat_entries[file_id]
 		
-		romfile.seek(start)
-		ovy_bytes = bytearray(romfile.read(end - start))
+		rom_file.seek(start)
+		ovy_bytes = bytearray(rom_file.read(end - start))
 		
 		try:
 			# Check if the overlay is compressed
 			if flag & 0x01000000:
 				decompress(ovy_bytes)
-				
+			
 			# Optimization: DS Protect will be detectable before the sinit region, so we can truncate everything after that
 			sinit_offset = sinit_start - ram_start
 			ovy_bytes = ovy_bytes[:sinit_offset]
@@ -396,17 +396,17 @@ def check_arm9_overlays(romfile):
 	return detected
 
 
-def check_arm9_static(romfile):
+def check_arm9_static(rom_file):
 	ARM9Info = struct.Struct("<LLLL")
 	ModuleParamMagic = 0x2106C0DE
 	
 	# Get ARM9 location/size
-	romfile.seek(0x20)
-	arm9_offset, arm9_entry, arm9_ram_start, arm9_size = ARM9Info.unpack(romfile.read(ARM9Info.size))
+	rom_file.seek(0x20)
+	arm9_offset, arm9_entry, arm9_ram_start, arm9_size = ARM9Info.unpack(rom_file.read(ARM9Info.size))
 	
 	# Get ARM9 static region
-	romfile.seek(arm9_offset)
-	arm9_bytes = bytearray(romfile.read(arm9_size))
+	rom_file.seek(arm9_offset)
+	arm9_bytes = bytearray(rom_file.read(arm9_size))
 	
 	# Check if the static region is compressed
 	# Must search for the module parameters in crt0
@@ -440,17 +440,17 @@ def is_gsdd(game_code):
 	return game_code.startswith("BO5")
 
 
-def rom_game_info(romfile):
-	romfile.seek(0x0)
-	game_title = romfile.read(12).decode("ascii").rstrip("\x00")
-	game_code = romfile.read(4).decode("ascii")
+def rom_game_info(rom_file):
+	rom_file.seek(0x0)
+	game_title = rom_file.read(12).decode("ascii").rstrip("\x00")
+	game_code = rom_file.read(4).decode("ascii")
 	
 	return game_title, game_code
 
 
-def quick_rom_is_valid(romfile):
-	romfile.seek(0, 2)
-	size = romfile.tell()
+def quick_rom_is_valid(rom_file):
+	rom_file.seek(0, 2)
+	size = rom_file.tell()
 	
 	if size < 8388608 or size > 536870912:
 		return False
@@ -459,8 +459,8 @@ def quick_rom_is_valid(romfile):
 	#if (size & (size - 1)) != 0:
 	#	return False
 	
-	romfile.seek(0x14E)
-	logo_and_checksum = romfile.read(16)
+	rom_file.seek(0x14E)
+	logo_and_checksum = rom_file.read(16)
 	
 	if logo_and_checksum != b"\x3C\xAF\xD6\x25\xE4\x8B\x38\x0A\xAC\x72\x21\xD4\xF8\x07\x56\xCF":
 		return False
@@ -468,12 +468,12 @@ def quick_rom_is_valid(romfile):
 	return True
 
 
-def check_rom(romfile):
-	if not quick_rom_is_valid(romfile):
-		print(f"ERROR: Invalid ROM file: {romfile.name}")
+def check_rom(rom_file):
+	if not quick_rom_is_valid(rom_file):
+		print(f"ERROR: Invalid ROM file: {rom_file.name}")
 		return
 	
-	game_title, game_code = rom_game_info(romfile)
+	game_title, game_code = rom_game_info(rom_file)
 	
 	print("")
 	print(f"Game: [{game_code}] {game_title}")
@@ -482,8 +482,8 @@ def check_rom(romfile):
 		print_gsdd_warning()
 		return
 	
-	detected = check_arm9_static(romfile)
-	detected |= check_arm9_overlays(romfile)
+	detected = check_arm9_static(rom_file)
+	detected |= check_arm9_overlays(rom_file)
 	
 	if not detected:
 		print("")
@@ -492,10 +492,11 @@ def check_rom(romfile):
 
 def dsdetect_main():
 	parser = argparse.ArgumentParser(description=__doc__)
-	parser.add_argument("rom", type=argparse.FileType("rb"))
+	parser.add_argument("ROM", type=argparse.FileType("rb"))
 	
 	args = parser.parse_args()
-	check_rom(args.rom)
+	
+	check_rom(args.ROM)
 
 
 if __name__ == "__main__":
