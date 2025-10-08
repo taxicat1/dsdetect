@@ -31,6 +31,16 @@ dsprot_identifying_signatures = {
 }
 
 
+dsprotect_func_names = [
+	"DSProt_DetectFlashcart",
+	"DSProt_DetectNotFlashcart",
+	"DSProt_DetectEmulator",
+	"DSProt_DetectNotEmulator",
+	"DSProt_DetectDummy",
+	"DSProt_DetectNotDummy"
+]
+
+
 # Extra signatures for deadstripping detection for versions prior to 1.23
 # These are encrypted regions of the six exported functions that may be deadstripped
 dsprot_deadstrip_signatures = {
@@ -236,7 +246,7 @@ def dsprotect_deadstrip_pattern(code_words, dsprot_ver):
 		signature = dsprot_deadstrip_signatures[dsprot_ver][i]
 		idx = idx_of_signature(code_words, signature)
 		if idx is False:
-			deadstripped_functions.append(i + 1)
+			deadstripped_functions.append(i)
 	
 	if len(deadstripped_functions) == 0:
 		return False
@@ -281,7 +291,8 @@ def has_dsprotect(raw_code, region_ram_start, region_print_name):
 				print(f"Address: {location:08X}")
 				
 				if deadstrip_pattern is not False:
-					deadstrip_str = ", ".join(map(str, deadstrip_pattern))
+					deadstrip_names = [ dsprotect_func_names[i] for i in deadstrip_pattern ]
+					deadstrip_str = ", ".join(deadstrip_names)
 					print(f"Deadstripped: {deadstrip_str}")
 				
 				detected = True
