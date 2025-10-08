@@ -378,7 +378,7 @@ def check_arm9_overlays(romfile):
 			detected |= has_dsprotect(ovy_bytes, ram_start, f"overlay {ovy_id}")
 		
 		except:
-			print(f"WARNING: failed to analyze overlay {ovy_id}")
+			print(f"WARNING: Failed to analyze overlay {ovy_id}")
 			continue
 	
 	return detected
@@ -410,7 +410,7 @@ def check_arm9_static(romfile):
 		return has_dsprotect(arm9_bytes, arm9_ram_start, "static region")
 	
 	except:
-		print("WARNING: failed to analyze ARM9 static region")
+		print("WARNING: Failed to analyze ARM9 static region")
 		return False
 
 
@@ -443,7 +443,7 @@ def quick_rom_is_valid(romfile):
 	if size < 8388608 or size > 536870912:
 		return False
 	
-	# Don't actually enforce this power of two thing in case of ROM trimming
+	# Don't actually enforce this size=2^n thing in case of ROM trimming
 	#if (size & (size - 1)) != 0:
 	#	return False
 	
@@ -458,7 +458,7 @@ def quick_rom_is_valid(romfile):
 
 def check_rom(romfile):
 	if not quick_rom_is_valid(romfile):
-		print(f"Invalid ROM file: {romfile.name}")
+		print(f"ERROR: Invalid ROM file: {romfile.name}")
 		return
 	
 	game_title, game_code = rom_game_info(romfile)
