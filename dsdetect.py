@@ -242,7 +242,7 @@ def dsprotect_deadstrip_pattern(code_words, dsprot_ver):
 		return False
 	
 	return deadstripped_functions
-	
+
 
 def dsprotect_ram_offset(code_words, dsprot_ver):
 	start_signature = dsprot_starts[dsprot_ver]["signature"]
@@ -414,12 +414,6 @@ def check_arm9_static(romfile):
 		return False
 
 
-def check_gsdd(romfile):
-	romfile.seek(0xC)
-	code = romfile.read(4).decode("ascii")
-	return code.startswith("BO5")
-
-
 def print_gsdd_warning():
 	print("")
 	print("WARNING: Golden Sun - Dark Dawn")
@@ -430,8 +424,49 @@ def print_gsdd_warning():
 	print("It uses a proprietary method of code compression that is currently unsupported.")
 
 
+def is_gsdd(game_code):
+	return game_code.startswith("BO5")
+
+
+def rom_game_info(romfile):
+	romfile.seek(0x0)
+	game_title = romfile.read(12).decode("ascii").rstrip("\x00")
+	game_code = romfile.read(4).decode("ascii")
+	
+	return game_title, game_code.rstrip()
+
+
+def quick_rom_is_valid(romfile):
+	romfile.seek(0, 2)
+	size = romfile.tell()
+	
+	if size < 8388608 or size > 536870912:
+		return False
+	
+	# Don't actually enforce this power of two thing in case of ROM trimming
+	#if (size & (size - 1)) != 0:
+	#	return False
+	
+	romfile.seek(0x14E)
+	logo_and_checksum = romfile.read(16)
+	
+	if logo_and_checksum != b"\x3C\xAF\xD6\x25\xE4\x8B\x38\x0A\xAC\x72\x21\xD4\xF8\x07\x56\xCF":
+		return False
+	
+	return True
+
+
 def check_rom(romfile):
-	if check_gsdd(romfile):
+	if not quick_rom_is_valid(romfile):
+		print(f"Invalid ROM file: {romfile.name}")
+		return
+	
+	game_title, game_code = rom_game_info(romfile)
+	
+	print("")
+	print(f"Game: [{game_code}] {game_title}")
+	
+	if is_gsdd(game_code):
 		print_gsdd_warning()
 		return
 	
