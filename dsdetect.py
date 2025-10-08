@@ -7,7 +7,7 @@ import argparse
 
 
 # Signatures for identification purposes
-dsprot_identifying_signatures = {
+dsprotect_identifying_signatures = {
 	"1.05"          :  [ 0xBAFE0F18, 0xE59CAF7A, 0xE2861884, 0xE1C5DA54, 0xEA018A6B, 0xEB0070C2 ],
 	"1.06"          :  [ 0xBAFE9B10, 0xE59CFA77, 0xE2862A71, 0xE1C54E3D, 0xEA01879D, 0xEB005FDF ],
 	"1.08"          :  [ 0xBAFE4040, 0xE59C2300, 0xE2852226, 0xE1C5CBE8, 0xEA01612F, 0xEB004979 ],
@@ -31,6 +31,7 @@ dsprot_identifying_signatures = {
 }
 
 
+# Names to use when reporting function deadstripping
 dsprotect_func_names = [
 	"DSProt_DetectFlashcart",
 	"DSProt_DetectNotFlashcart",
@@ -43,7 +44,7 @@ dsprotect_func_names = [
 
 # Extra signatures for deadstripping detection for versions prior to 1.23
 # These are encrypted regions of the six exported functions that may be deadstripped
-dsprot_deadstrip_signatures = {
+dsprotect_deadstrip_signatures = {
 	"1.05" : [
 		[ 0xE3585B63, 0x1359500F, 0x0A01C324, 0xE12EA0DA, 0xEA01ACAB, 0xEB005514 ],
 		[ 0xE358AD36, 0x1359ABB6, 0x0A01E6D4, 0xE12EFACC, 0xEA014452, 0xEB003304 ],
@@ -103,7 +104,7 @@ dsprot_deadstrip_signatures = {
 # Non-unique and non-identifying signatures used to find the start of DS Protect once its existence and version has already been assumed
 # These signatures are taken from random unique-ish instructions near the top of DS Protect
 # This also has to be careful about ignoring linker-generated veneers
-dsprot_starts = {
+dsprotect_starts = {
 	"1.05" : {
 		"signature" : [ 0xE1A05FA0, 0xE080E00E, 0xE085E1CE, 0xE0CCEE94, 0xE065CF00, 0xE0855F6C ],
 		"start_word" : 0xE92D4008
@@ -237,13 +238,13 @@ def idx_of_signature(text, signature):
 
 
 def dsprotect_deadstrip_pattern(code_words, dsprot_ver):
-	if dsprot_ver not in dsprot_deadstrip_signatures:
+	if dsprot_ver not in dsprotect_deadstrip_signatures:
 		return False
 	
 	deadstripped_functions = list()
 	
-	for i in range(len(dsprot_deadstrip_signatures[dsprot_ver])):
-		signature = dsprot_deadstrip_signatures[dsprot_ver][i]
+	for i in range(len(dsprotect_deadstrip_signatures[dsprot_ver])):
+		signature = dsprotect_deadstrip_signatures[dsprot_ver][i]
 		idx = idx_of_signature(code_words, signature)
 		if idx is False:
 			deadstripped_functions.append(i)
@@ -255,8 +256,8 @@ def dsprotect_deadstrip_pattern(code_words, dsprot_ver):
 
 
 def dsprotect_ram_offset(code_words, dsprot_ver):
-	start_signature = dsprot_starts[dsprot_ver]["signature"]
-	start_word = dsprot_starts[dsprot_ver]["start_word"]
+	start_signature = dsprotect_starts[dsprot_ver]["signature"]
+	start_word = dsprotect_starts[dsprot_ver]["start_word"]
 	
 	start_signature_idx = idx_of_signature(code_words, start_signature)
 	
@@ -277,8 +278,8 @@ def has_dsprotect(raw_code, region_ram_start, region_print_name):
 	code_words = bytes_to_u32s(raw_code)
 	
 	detected = False
-	for dsprot_ver in dsprot_identifying_signatures:
-		identifier_idx = idx_of_signature(code_words, dsprot_identifying_signatures[dsprot_ver])
+	for dsprot_ver in dsprotect_identifying_signatures:
+		identifier_idx = idx_of_signature(code_words, dsprotect_identifying_signatures[dsprot_ver])
 		if identifier_idx is not False:
 			ram_offset = dsprotect_ram_offset(code_words, dsprot_ver)
 			if ram_offset is not False:
