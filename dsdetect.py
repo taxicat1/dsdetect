@@ -445,7 +445,7 @@ def rom_game_info(romfile):
 	game_title = romfile.read(12).decode("ascii").rstrip("\x00")
 	game_code = romfile.read(4).decode("ascii")
 	
-	return game_title, game_code.rstrip()
+	return game_title, game_code
 
 
 def quick_rom_is_valid(romfile):
