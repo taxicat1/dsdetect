@@ -445,7 +445,10 @@ def rom_game_info(rom_file):
 	game_title = rom_file.read(12).decode("ascii").rstrip("\x00")
 	game_code = rom_file.read(4).decode("ascii")
 	
-	return game_title, game_code
+	rom_file.seek(0x1E)
+	game_rev = int.from_bytes(rom_file.read(1), byteorder="big")
+	
+	return game_title, game_code, game_rev
 
 
 def quick_rom_is_valid(rom_file):
@@ -473,10 +476,13 @@ def check_rom(rom_file):
 		print(f"ERROR: Invalid ROM file: {rom_file.name}")
 		return
 	
-	game_title, game_code = rom_game_info(rom_file)
+	game_title, game_code, game_rev = rom_game_info(rom_file)
 	
 	print("")
-	print(f"Game: [{game_code}] {game_title}")
+	if game_rev != 0:
+		print(f"Game: [{game_code}] {game_title} (Rev {game_rev})")
+	else:
+		print(f"Game: [{game_code}] {game_title}")
 	
 	if is_gsdd(game_code):
 		print_gsdd_warning()
