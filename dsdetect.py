@@ -8,6 +8,7 @@ import argparse
 
 # Signatures for identification purposes
 dsprotect_identifying_signatures = {
+	"1.00/2 (unk)"  :  [ 0xE3527270, 0xBAFE77FC, 0xE59E0989, 0xE1C2F9AF, 0xEA018A51, 0xEB004AE2 ],
 	"1.05"          :  [ 0xBAFE0F18, 0xE59CAF7A, 0xE2861884, 0xE1C5DA54, 0xEA018A6B, 0xEB0070C2 ],
 	"1.06"          :  [ 0xBAFE9B10, 0xE59CFA77, 0xE2862A71, 0xE1C54E3D, 0xEA01879D, 0xEB005FDF ],
 	"1.08"          :  [ 0xBAFE4040, 0xE59C2300, 0xE2852226, 0xE1C5CBE8, 0xEA01612F, 0xEB004979 ],
@@ -45,6 +46,15 @@ dsprotect_func_names = [
 # Extra signatures for deadstripping detection for versions prior to 1.23
 # These are encrypted regions of the six exported functions that may be deadstripped
 dsprotect_deadstrip_signatures = {
+	"1.00/2 (unk)" : [
+		[ 0xE358D45F, 0x13597E41, 0x0A01244C, 0xE12E8CD4, 0xEA01175B, 0xEB00002A ],
+		[ 0xE3586044, 0x13593403, 0x0A013DA8, 0xE12E6DE2, 0xEA01FA58, 0xEB004824 ],
+		None,
+		None,
+		[ 0xE3585495, 0x135BBC4B, 0x0A01113B, 0xE12E783F, 0xEA0197AF, 0xEB0018BF ],
+		[ 0xE358940D, 0x135B0CB2, 0x0A0148A4, 0xE12EDCA8, 0xEA011B62, 0xEB006785 ]
+	],
+	
 	"1.05" : [
 		[ 0xE3585B63, 0x1359500F, 0x0A01C324, 0xE12EA0DA, 0xEA01ACAB, 0xEB005514 ],
 		[ 0xE358AD36, 0x1359ABB6, 0x0A01E6D4, 0xE12EFACC, 0xEA014452, 0xEB003304 ],
@@ -105,6 +115,11 @@ dsprotect_deadstrip_signatures = {
 # These signatures are taken from random unique-ish instructions near the top of DS Protect
 # This also has to be careful about ignoring linker-generated veneers
 dsprotect_starts = {
+	"1.00/2 (unk)" : {
+		"signature" : [ 0xE2400E19, 0xE7850107, 0xE12FFF30, 0xE3500000, 0x11A03004, 0x01A0300A ],
+		"start_word" : 0xE92D47F0
+	},
+	
 	"1.05" : {
 		"signature" : [ 0xE1A05FA0, 0xE080E00E, 0xE085E1CE, 0xE0CCEE94, 0xE065CF00, 0xE0855F6C ],
 		"start_word" : 0xE92D4008
@@ -245,6 +260,9 @@ def dsprotect_deadstrip_pattern(code_words, dsprot_ver):
 	
 	for i in range(len(dsprotect_deadstrip_signatures[dsprot_ver])):
 		signature = dsprotect_deadstrip_signatures[dsprot_ver][i]
+		if signature is None:
+			continue
+		
 		idx = idx_of_signature(code_words, signature)
 		if idx is False:
 			deadstripped_functions.append(i)

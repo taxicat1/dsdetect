@@ -8,7 +8,7 @@ Most commonly, DS Protect is in its own dedicated overlay. Only rarely does a ga
 
 ## How can DS Protect be identified?
 
-Every single version of DS Protect includes these bytes in a `.rodata` region:
+Every single version of DS Protect (except for the unknown 1.00/2) includes these bytes in a `.rodata` region:
 
 `FF F6 40 FF FF CE 00 00`
 
@@ -103,12 +103,13 @@ e1a0000f
 e2400014    
 ```
 
-Versions 1.06 to 1.10 use eleven different encryption keys, while versions 1.20 and 1.22 use eighteen different encryption keys. Note that these versions did not have any protection against deadstripping, so if the given game did not utilize all of the DS Protect functions, some of the functions (and corresponding keys) may be missing.
+Versions 1.06 to 1.10 use eleven different encryption keys, while versions 1.20 and 1.22 use eighteen different encryption keys, and the unknown version 1.00/2 only uses seven. Note that these versions did not have any protection against deadstripping, so if the given game did not utilize all of the DS Protect functions, some of the functions (and corresponding keys) may be missing.
 
 The encryption keys can be used to identify the DS Protect version:
 
 | Version | Keys |
 | --- | --- |
+|  1.00/2  | `002A`, `4824`, `18BF`, `6785`, `2CD7`, `4AE2`, `3D6D` |
 |  1.05  |  `4276` `7A4A` `70C2` `476E` `1961` `5514` `3304` `350E` `2E8E` `09A1` `0E5E` |
 |  1.06  |  `3530` `3089` `5FDF` `0D2C` `350E` `48F8` `59B5` `3481` `65C5` `12F0` `76BB` |
 |  1.08  |  `0317` `1DFA` `4979` `1476` `4544` `4EF9` `292E` `1186` `1CC4` `72A8` `7CD4` |
@@ -128,6 +129,7 @@ These are the instruction ranges chosen for these versions:
 
 | Version | Encrypted instructions |
 | --- | --- |
+|  1.00/2  | `e3527270 bafe77fc e59e0989 e1c2f9af ea018a51 eb004ae2` |
 |  1.05  | `bafe0f18 e59caf7a e2861884 e1c5da54 ea018a6b eb0070c2` |
 |  1.06  | `bafe9b10 e59cfa77 e2862a71 e1c54e3d ea01879d eb005fdf` |
 |  1.08  | `bafe4040 e59c2300 e2852226 e1c5cbe8 ea01612f eb004979` |
