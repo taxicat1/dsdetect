@@ -473,10 +473,11 @@ def quick_rom_is_valid(rom_file):
 	rom_file.seek(0, 2)
 	size = rom_file.tell()
 	
-	if size < 8388608 or size > 536870912:
+	# Don't actually enforce this in case of ROM trimming
+	#if size < 8388608 or size > 536870912:
+	if size < 102400 or size > 536870912:
 		return False
 	
-	# Don't actually enforce this size=2^n thing in case of ROM trimming
 	#if (size & (size - 1)) != 0:
 	#	return False
 	
